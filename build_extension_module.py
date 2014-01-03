@@ -93,10 +93,10 @@ PyInit_%s(void)
             return NULL;
 #else
 PyMODINIT_FUNC
-init_erfa(void)
+init%s(void)
 {
 	PyObject *m;
-	m = Py_InitModule3("_erfa", _erfa_methods, module_doc);
+	m = Py_InitModule3("%s", %s_methods, module_doc);
 	if (m == NULL)
             goto finally;
 #endif
@@ -186,8 +186,8 @@ class Builder(object):
         m = '''PyDoc_STRVAR(module_doc,
 "%s");
 '''%self.module_doc
-        n9 = (self.module_name,)*9
-        m += module_tail%n9
+        n12 = (self.module_name,)*12
+        m += module_tail%n12
         for a in self.module_add:
             m += '''        PyModule_AddObject(m, "%s", %s);\n'''%a
         m += self.tail_struct_seq
