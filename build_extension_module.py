@@ -89,6 +89,7 @@ PyInit_%s(void)
 {
 	PyObject *m;
 	m = PyModule_Create(&%smodule);
+	/*import_array();*/
 	if (m == NULL)
             return NULL;
 #else
@@ -97,6 +98,7 @@ init%s(void)
 {
 	PyObject *m;
 	m = Py_InitModule3("%s", %s_methods, module_doc);
+	/*import_array();*/
 	if (m == NULL)
             goto finally;
 #endif
@@ -110,11 +112,16 @@ class Builder(object):
                  module_localprototype, module_localfunction,
                  module_add, module_methods,
                  module_doc, module_filename,
-                 module_struct_seq):
+                 module_struct_seq, use_numpy=False):
+        ## if use_numpy is True, should add "numpy/npy_3kcompat.h" and "numpy/arrayobject.h" in include files
+        self.use_numpy = use_numpy
         self.module_name = module_name
         self.module_doc = module_doc
         self.module_filename = module_filename
         self.include_files = ['#include %s'%i for i in include_files]
+        if self.use_numpy:
+            self.include_files.extend(['#include "numpy/npy_3kcompat.h"',
+                                       '#include "numpy/arrayobject.h"'])
         self.include_files = '\n'.join(self.include_files)
         self.localprototype = module_localprototype
         self.localfunction = module_localfunction
@@ -200,6 +207,8 @@ class Builder(object):
 #endif
 }
 '''
+        if self.use_numpy:
+            m = m.replace('/*import_array();*/', 'import_array();')
         return m
 
     def create(self):
